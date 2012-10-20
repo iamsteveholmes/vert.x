@@ -35,15 +35,7 @@ import org.vertx.java.deploy.Container;
 import org.vertx.java.deploy.Verticle;
 import org.vertx.java.deploy.VerticleFactory;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -736,7 +728,7 @@ public class VerticleManager implements ModuleReloader {
   // Must be synchronized since called directly from different thread
   private synchronized void addVerticle(Deployment deployment, Verticle verticle,
                                         VerticleFactory factory) {
-    String loggerName = deployment.name + "-" + deployment.verticles.size();
+    String loggerName = "org.vertx.deployments." + deployment.name + "-" + deployment.verticles.size();
     Logger logger = LoggerFactory.getLogger(loggerName);
     Context context = Context.getContext();
     VerticleHolder holder = new VerticleHolder(deployment, context, verticle,

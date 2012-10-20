@@ -18,8 +18,8 @@
 
 package org.vertx.java.core.logging.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.vertx.java.core.logging.Logger;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
