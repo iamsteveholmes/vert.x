@@ -45,7 +45,7 @@ public class Starter {
 
   private static final String CP_SEPARATOR = System.getProperty("path.separator");
 
-  private static final String VERSION = "vert.x-1.2.3.final";
+  private static final String VERSION = "vert.x-1.3.0.final";
 
   public static void main(String[] args) {
     new Starter(args);
@@ -93,19 +93,7 @@ public class Starter {
 
   private void installModule(String modName, Args args) {
     String repo = args.map.get("-repo");
-    final CountDownLatch latch = new CountDownLatch(1);
-    new VerticleManager(vertx, repo).installMod(modName, new Handler<Boolean>() {
-      public void handle(Boolean res) {
-        latch.countDown();
-      }
-    });
-    while (true) {
-      try {
-        latch.await(30, TimeUnit.SECONDS);
-        break;
-      } catch (InterruptedException e) {
-      }
-    }
+    new VerticleManager(vertx, repo).installMod(modName);
   }
 
   private void uninstallModule(String modName) {

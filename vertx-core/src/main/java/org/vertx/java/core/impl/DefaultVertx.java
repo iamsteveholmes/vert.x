@@ -68,7 +68,7 @@ public class DefaultVertx extends VertxInternal {
 
   //For now we use a hashed wheel with it's own thread for timeouts - ideally the event loop would have
   //it's own hashed wheel
-  private final HashedWheelTimer timer = new HashedWheelTimer(new VertxThreadFactory("vert.x-timer-thread"), 20,
+  private final HashedWheelTimer timer = new HashedWheelTimer(new VertxThreadFactory("vert.x-timer-thread"), 1,
       TimeUnit.MILLISECONDS, 8192);
   {
     timer.start();
@@ -246,6 +246,10 @@ public class DefaultVertx extends VertxInternal {
 
   public Map<ServerID, DefaultNetServer> sharedNetServers() {
     return sharedNetServers;
+  }
+
+  public HashedWheelTimer getTimer() {
+    return timer;
   }
 
   private long setTimeout(final long delay, boolean periodic, final Handler<Long> handler) {
