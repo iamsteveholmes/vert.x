@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.SimpleHandler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.Context;
 import org.vertx.java.core.impl.DefaultVertx;
 import org.vertx.java.core.impl.VertxInternal;
 import org.vertx.java.core.json.JsonObject;
@@ -51,8 +52,10 @@ public class TestBase extends TestCase {
 
   public static final String EVENTS_ADDRESS = "__test_events";
 
+  // A single Vertx and VerticleManager for <b>ALL</b> tests
   protected static VertxInternal vertx = new DefaultVertx();
   private static VerticleManager verticleManager = new VerticleManager(vertx);
+
   private BlockingQueue<JsonObject> events = new LinkedBlockingQueue<>();
   private TestUtils tu = new TestUtils(vertx);
   private volatile Handler<Message<JsonObject>> handler;
@@ -137,6 +140,8 @@ public class TestBase extends TestCase {
         }
         events.clear();
         vertx.eventBus().unregisterHandler(EVENTS_ADDRESS, handler);
+        Context.setContext(null);
+        
       } catch (Exception e) {
         e.printStackTrace();
         throw e;

@@ -16,6 +16,38 @@
 
 package org.vertx.java.deploy.impl;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
@@ -27,7 +59,6 @@ import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.impl.BlockingAction;
 import org.vertx.java.core.impl.Context;
 import org.vertx.java.core.impl.VertxInternal;
-import org.vertx.java.core.impl.WorkerContext;
 import org.vertx.java.core.json.DecodeException;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -35,19 +66,6 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.deploy.Container;
 import org.vertx.java.deploy.Verticle;
 import org.vertx.java.deploy.VerticleFactory;
-
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  *
@@ -62,6 +80,9 @@ public class VerticleManager implements ModuleReloader {
   private static final String REPO_URI_ROOT = "/vertx-mods/mods/";
   private static final String DEFAULT_REPO_HOST = "vert-x.github.com";
   private static final int BUFFER_SIZE = 4096;
+  private static final String HTTP_PROXY_HOST_PROP_NAME = "http.proxyHost";
+  private static final String HTTP_PROXY_PORT_PROP_NAME = "http.proxyPort";
+  private static final String COLON = ":";
 
   private final VertxInternal vertx;
   // deployment name --> deployment
@@ -70,16 +91,34 @@ public class VerticleManager implements ModuleReloader {
   private final File modRoot;
   private final CountDownLatch stopLatch = new CountDownLatch(1);
   private Map<String, String> factoryNames = new HashMap<>();
-  private final String defaultRepo;
+  private final String repoHost;
+  private final int repoPort;
+  private final String proxyHost;
+  private final int proxyPort;
+
   private final Redeployer redeployer;
 
   public VerticleManager(VertxInternal vertx) {
     this(vertx, null);
   }
 
-  public VerticleManager(VertxInternal vertx, String defaultRepo) {
+  public VerticleManager(VertxInternal vertx, String repo) {
     this.vertx = vertx;
-    this.defaultRepo = defaultRepo == null ? DEFAULT_REPO_HOST : defaultRepo;
+    if (repo != null) {
+      if (repo.contains(COLON)) {
+        this.repoHost = repo.substring(0, repo.indexOf(COLON));
+        this.repoPort = Integer.parseInt( repo.substring(repo.indexOf(COLON)+1));
+      } else {
+        this.repoHost = repo;
+        this.repoPort = 80;
+      }
+    } else {
+      this.repoHost = DEFAULT_REPO_HOST;
+      this.repoPort = 80;
+    }
+    this.proxyHost = System.getProperty(HTTP_PROXY_HOST_PROP_NAME);
+    String tmpPort = System.getProperty(HTTP_PROXY_PORT_PROP_NAME);
+    this.proxyPort = tmpPort != null ? Integer.parseInt(tmpPort) : 80;
     VertxLocator.vertx = vertx;
     VertxLocator.container = new Container(this);
     String modDir = System.getProperty("vertx.mods");
@@ -166,7 +205,9 @@ public class VerticleManager implements ModuleReloader {
     AsyncResultHandler<String> handler = new AsyncResultHandler<String>() {
       public void handle(AsyncResult<String> res) {
         if (res.succeeded()) {
-          doneHandler.handle(res.result);
+          if (doneHandler != null) {
+            doneHandler.handle(res.result);
+          }
         } else {
           res.exception.printStackTrace();
         }
@@ -382,21 +423,23 @@ public class VerticleManager implements ModuleReloader {
   private JsonObject loadModuleConfig(String modName, File modDir) {
     checkWorkerContext();
     if (modDir.exists()) {
-      String conf;
-      try {
-        conf = new Scanner(new File(modDir, "mod.json")).useDelimiter("\\A").next();
+      try (Scanner scanner = new Scanner(new File(modDir, "mod.json")).useDelimiter("\\A")) {
+        String conf;
+        try {
+          conf = scanner.next();
+        } catch (NoSuchElementException e) {
+          throw new IllegalStateException("Module " + modName + " contains an empty mod.json file");
+        }
+        JsonObject json;
+        try {
+          json = new JsonObject(conf);
+        } catch (DecodeException e) {
+          throw new IllegalStateException("Module " + modName + " mod.json contains invalid json");
+        }
+        return json;
       } catch (FileNotFoundException e) {
         throw new IllegalStateException("Module " + modName + " does not contain a mod.json file");
-      } catch (NoSuchElementException e) {
-        throw new IllegalStateException("Module " + modName + " contains an empty mod.json file");
       }
-      JsonObject json;
-      try {
-        json = new JsonObject(conf);
-      } catch (DecodeException e) {
-        throw new IllegalStateException("Module " + modName + " mod.json contains invalid json");
-      }
-      return json;
     } else {
       return null;
     }
@@ -492,7 +535,17 @@ public class VerticleManager implements ModuleReloader {
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicReference<Buffer> mod = new AtomicReference<>();
     HttpClient client = vertx.createHttpClient();
-    client.setHost(defaultRepo);
+    if (proxyHost != null) {
+      client.setHost(proxyHost);
+      if (proxyPort != 80) {
+        client.setPort(proxyPort);
+      } else {
+        client.setPort(80);
+      }
+    } else {
+      client.setHost(repoHost);
+      client.setPort(repoPort);
+    }
     client.exceptionHandler(new Handler<Exception>() {
       public void handle(Exception e) {
         log.error("Unable to connect to repository");
@@ -500,7 +553,15 @@ public class VerticleManager implements ModuleReloader {
       }
     });
     String uri = REPO_URI_ROOT + moduleName + "/mod.zip";
-    log.info("Attempting to install module " + moduleName + " from http://" + defaultRepo + uri);
+    String msg = "Attempting to install module " + moduleName + " from http://"
+        + repoHost + ":" + repoPort + uri;
+    if (proxyHost != null) {
+      msg += " Using proxy host " + proxyHost + ":" + proxyPort;
+    }
+    log.info(msg);
+    if (proxyHost != null) {
+      uri = new StringBuffer("http://").append(DEFAULT_REPO_HOST).append(uri).toString();
+    }
     HttpClientRequest req = client.get(uri, new Handler<HttpClientResponse>() {
       public void handle(HttpClientResponse resp) {
         if (resp.statusCode == 200) {
@@ -513,16 +574,18 @@ public class VerticleManager implements ModuleReloader {
           });
         } else if (resp.statusCode == 404) {
           log.error("Can't find module " + moduleName + " in repository");
-          //doneHandler.handle(false);
           latch.countDown();
         } else {
           log.error("Failed to download module: " + resp.statusCode);
-          //doneHandler.handle(false);
           latch.countDown();
         }
       }
     });
-    req.putHeader("host", defaultRepo);
+    if(proxyHost != null){
+      req.putHeader("host", proxyHost);
+    } else {
+      req.putHeader("host", repoHost);
+    }
     req.putHeader("user-agent", "Vert.x Module Installer");
     req.end();
     while (true) {
@@ -877,12 +940,32 @@ public class VerticleManager implements ModuleReloader {
   }
 
   private void redeploy(final Deployment deployment) {
-    doDeployMod(true, deployment.name, deployment.modName, deployment.config, deployment.instances,
-                null);
+    // Has to occur on a worker thread
+    AsyncResultHandler<String> handler = new AsyncResultHandler<String>() {
+      public void handle(AsyncResult<String> res) {
+        if (!res.succeeded()) {
+          res.exception.printStackTrace();
+        }
+      }
+    };
+    BlockingAction<Void> redeployAction = new BlockingAction<Void>(vertx, handler) {
+      @Override
+      public Void action() throws Exception {
+        doDeployMod(true, deployment.name, deployment.modName, deployment.config, deployment.instances,
+            null);
+        return null;
+      }
+    };
+    redeployAction.run();
   }
 
   private void addDeployment(String deploymentName, Deployment deployment) {
     deployments.put(deploymentName, deployment);
+  }
+  
+
+  public void stop() {
+    redeployer.close();
   }
 
 }

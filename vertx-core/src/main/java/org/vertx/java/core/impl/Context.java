@@ -49,7 +49,9 @@ public abstract class Context {
 
   public static void setContext(Context context) {
     contextTL.set(context);
-    Thread.currentThread().setContextClassLoader(context.tccl);
+    if (context != null) {
+    	Thread.currentThread().setContextClassLoader(context.tccl);
+    }
   }
 
   public static Context getContext() {
@@ -117,11 +119,14 @@ public abstract class Context {
   protected Runnable wrapTask(final Runnable task) {
     return new Runnable() {
       public void run() {
+        String threadName = Thread.currentThread().getName();
         try {
           setContext(Context.this);
           task.run();
         } catch (Throwable t) {
           reportException(t);
+        } finally {
+          Thread.currentThread().setName(threadName);
         }
       }
     };

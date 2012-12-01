@@ -114,6 +114,7 @@ public class JavaHttpTest extends TestBase {
     });
 
     assertTrue(latch.await(5, TimeUnit.SECONDS));
+    vertx.stop();
   }
 
   public void testSimpleGET() {
@@ -476,7 +477,27 @@ public class JavaHttpTest extends TestBase {
     startTest(getMethodName());
   }
 
-    @Test
+  public void testConnectionErrorsGetReportedToRequest() {
+    startTest(getMethodName());
+  }
+
+  public void testRequestTimesoutWhenIndicatedPeriodExpiresWithoutAResponseFromRemoteServer() {
+    startTest(getMethodName());
+  }
+
+  public void testRequestTimeoutCanceledWhenRequestHasAnOtherError() {
+    startTest(getMethodName());
+  }
+
+  public void testRequestTimeoutCanceledWhenRequestEndsNormally() {
+    startTest(getMethodName());
+  }
+
+  public void testRequestNotReceivedIfTimedout() {
+    startTest(getMethodName());
+  }
+
+  @Test
   // Client trusts all server certs
   public void testTLSClientTrustAll() throws Exception {
     testTLS(getMethodName(), false, false, true, false, false, true, true);
