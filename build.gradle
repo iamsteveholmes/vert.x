@@ -29,7 +29,7 @@ buildscript {
 	dependencies {
 
         // kotlin plugin
-        classpath 'com.github.goldin.plugins.gradle:kotlin:0.2-beta'
+        classpath 'com.github.goldin.plugins.gradle:kotlin:0.2-beta-4'
     }
 }
 
@@ -39,6 +39,7 @@ allprojects {
 
 	configurations {
 		platform
+        all*.exclude group: 'org.jetbrains.kotlin', module: 'kotlin-compiler', version: "$kotlinVersion"
 	}
 }
 
@@ -52,6 +53,9 @@ subprojects {
 	group = rootProject.group
 	
 	repositories {
+        flatDir {
+            dirs 'vertx-lang/vertx-lang-kotlin/lib'
+        }
 		mavenCentral()
         mavenRepo url: 'http://repository.jetbrains.com/kotlin/'
     }
@@ -160,8 +164,9 @@ task assemble(type: Copy, dependsOn: ['preflight', subprojects.assemble]) {
 	into('lib') {
 		from subprojects.configurations.platform
 		from subprojects.configurations.compile
+        from subprojects.configurations.runtime
     // Don't just include everything!!
-    includes = ["groovy*.jar", "jackson*.jar", "rhino*.jar", "netty*.jar", "hazelcast*.jar", "vertx*.jar"]
+    includes = ["groovy*.jar", "kotlin*.jar", "jackson*.jar", "rhino*.jar", "netty*.jar", "hazelcast*.jar", "vertx*.jar"]
 	}
 	doLast {
 		project.ant.chmod(file: "build/$rootProject.name-$version/bin", perm: 'ugo+x')

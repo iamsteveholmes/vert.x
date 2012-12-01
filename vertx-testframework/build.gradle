@@ -16,6 +16,7 @@
 
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
+apply plugin: 'kotlin'
 
 sourceSets {
 	main {
@@ -47,7 +48,12 @@ dependencies {
 	testCompile "org.jruby:jruby:$jrubyVersion"
 	testCompile "org.python:jython-standalone:$jythonVersion"
 	testCompile "org.mozilla:rhino:$rhinoVersion"
-  testCompile files("$rootDir/src/dist/conf")
+    testCompile files("$rootDir/src/dist/conf")
 }
 
 javadoc.dependsOn groovydoc
+//javadoc.dependsOn kdoc
+
+processTestResources.dependsOn compileTestKotlin
+compileKotlin.dependsOn compileJava
+processResources.dependsOn compileKotlin

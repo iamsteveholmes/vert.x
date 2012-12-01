@@ -12,7 +12,6 @@ public class KotlinScriptVerticle(val clazz: Class<*>) : Verticle() {
             onStart!!()
         }
     }
-
     public override fun stop() {
         if(onStop != null) {
             onStop!!()

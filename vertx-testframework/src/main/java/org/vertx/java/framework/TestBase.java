@@ -16,7 +16,18 @@
 
 package org.vertx.java.framework;
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.Test;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.SimpleHandler;
@@ -28,13 +39,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.deploy.impl.VerticleManager;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
+import junit.framework.TestCase;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -177,7 +182,7 @@ public class TestBase extends TestCase {
       fail("The test framework requires at least 2 processors");
     }
     URL url;
-    if (main.endsWith(".js") || main.endsWith(".rb") || main.endsWith(".groovy") || main.endsWith(".py") || main.endsWith(".kt") || main.endsWith(".ktscript")) {
+    if (main.endsWith(".js") || main.endsWith(".rb") || main.endsWith(".groovy") || main.endsWith(".py") || main.endsWith(".kt") || main.endsWith(".ktscript") || main.endsWith( ".kts" )) {
       url = getClass().getClassLoader().getResource(main);
       if(url == null) {
           File file = new File(main).getAbsoluteFile().getCanonicalFile();

@@ -16,25 +16,24 @@
 
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
+apply plugin: 'kotlin'
 
 sourceSets {
 	main {
 		resources {
-			srcDirs "src/main/ruby_scripts", "src/main/python_scripts", "src/main/groovy_scripts", "src/main/javascript_scripts"
+			srcDirs "src/main/ruby_scripts", "src/main/python_scripts", "src/main/groovy_scripts", "src/main/javascript_scripts", "../src/dist/conf"
 		}
 	}
 	test {
 		resources {
-			srcDirs "src/test/ruby_scripts", "src/test/python_scripts", "src/test/groovy_scripts",
-          "src/test/javascript_scripts",
-          "../src/dist/conf"
+			srcDirs "src/test/ruby_scripts", "src/test/python_scripts", "src/test/groovy_scripts", "src/test/javascript_scripts", "src/test/kotlin-scripts", "../src/dist/conf"
 		}
 	}
 }
 
 dependencies {
 	compile "junit:junit:$junitVersion" // provide exportable components
-  compile project(':vertx-testframework')
+    compile project(':vertx-testframework')
 }
 
 test {
@@ -48,3 +47,5 @@ test {
 
 	forkEvery 50 // FIXME This may not be necessary
 }
+
+compileJava.dependsOn compileKotlin
