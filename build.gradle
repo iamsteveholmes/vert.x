@@ -27,7 +27,11 @@ buildscript {
 	}
   dependencies {
     classpath 'com.eriwen:gradle-js-plugin:1.1'
-    classpath 'com.github.goldin.plugins.gradle:kotlin:0.2-beta-4'
+    classpath ('com.github.goldin.plugins.gradle:kotlin:0.2-SNAPSHOT'){
+        //exclude group: 'org.jetbrains.kotlin'
+    }
+    classpath "org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion",
+              "org.jetbrains.kotlin:kdoc:$kotlinVersion"
   }
 } 
 
@@ -39,8 +43,12 @@ allprojects {
 
 	configurations {
 		platform
-        all*.exclude group: 'org.jetbrains.kotlin', module: 'kotlin-compiler', version: "$kotlinVersion"
+        //all*.exclude group: 'org.jetbrains.kotlin', module: 'kotlin-compiler', version: "$kotlinVersion"
 	}
+
+    repositories {
+        mavenRepo url: 'http://repository.jetbrains.com/kotlin/'
+    }
 }
 
 subprojects {
@@ -53,11 +61,11 @@ subprojects {
 	group = rootProject.group
 	
 	repositories {
-        flatDir {
+        /*flatDir {
             dirs 'vertx-lang/vertx-lang-kotlin/lib'
-        }
+        }*/
 		mavenCentral()
-        mavenRepo url: 'http://repository.jetbrains.com/kotlin/'
+        //mavenRepo url: 'http://repository.jetbrains.com/kotlin/'
     }
 	
 	dependencies {

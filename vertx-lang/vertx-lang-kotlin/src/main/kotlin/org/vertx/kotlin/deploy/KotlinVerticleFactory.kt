@@ -12,6 +12,8 @@ import org.vertx.java.deploy.Container
 import org.vertx.java.deploy.Verticle
 import org.vertx.java.deploy.VerticleFactory
 import org.vertx.java.deploy.impl.VerticleManager
+import org.jetbrains.jet.utils.KotlinPaths
+import org.jetbrains.jet.utils.PathUtil
 
 public class KotlinVerticleFactory() : VerticleFactory {
 
@@ -23,14 +25,15 @@ public class KotlinVerticleFactory() : VerticleFactory {
 
     public override fun createVerticle(main: String?, parentCL: ClassLoader?): Verticle? {
         val url = parentCL!!.getResource(main)
-        val path: String? = url!!.getPath()
+        val path: String = url!!.getPath()!!
+        val kotlinPaths: KotlinPaths = PathUtil.getKotlinPathsForCompiler()
         val vertxParameter = AnalyzerScriptParameter(Name.identifier("vertx"), JetTypeName.fromJavaClass(javaClass<Vertx>()))
         val containerParameter = AnalyzerScriptParameter(Name.identifier("container"), JetTypeName.fromJavaClass(javaClass<Container>()))
         val verticleParameter = AnalyzerScriptParameter(Name.identifier("verticle"), JetTypeName.fromJavaClass(javaClass<KotlinScriptVerticle>()))
         val scriptParameters: List<AnalyzerScriptParameter>? = Arrays.asList(vertxParameter, containerParameter, verticleParameter)?.toList()
         val scriptDefinitions: List<JetScriptDefinition>? = Arrays.asList(JetScriptDefinition(".kts", Collections.emptyList<AnalyzerScriptParameter>()), JetScriptDefinition(".ktscript", Collections.emptyList<AnalyzerScriptParameter>()))?.toList()
 
-        val clazz = KotlinToJVMBytecodeCompiler.compileScript(parentCL, path, scriptParameters, scriptDefinitions)!!
+        val clazz = KotlinToJVMBytecodeCompiler.compileScript(parentCL, kotlinPaths, path, scriptParameters, scriptDefinitions)!!
         val verticle = KotlinScriptVerticle(clazz)
         return verticle
     }

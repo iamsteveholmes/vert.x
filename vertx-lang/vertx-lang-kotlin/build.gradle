@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2012 the original author or authors.
  *
@@ -18,17 +17,18 @@
 apply from:   "$rootDir/gradle/maven.gradle"
 apply plugin: 'kotlin'
 
-repositories {
+/*repositories {
     mavenLocal()
     mavenRepo url: 'http://repository.jetbrains.com/kotlin/'
-}
+}*/
 
 dependencies {
-    compile fileTree(dir: 'lib', includes: ['*.jar'])
 	compile project(':vertx-core'),
-            project(':vertx-platform'),
+            project(':vertx-platform')
+    compile "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion",
             "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-            "com.intellij:openapi:7.0.3"
+            "org.jetbrains.kotlin:kotlin-compiler:0.4.297",
+            "org.jetbrains.kotlin:kotlin-jdk-annotations:$kotlinVersion"
 }
 
 gradle.startParameter.excludedTaskNames += "kdoc"
