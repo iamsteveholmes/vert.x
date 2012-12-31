@@ -24,11 +24,15 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'lib', includes: ['*.jar'])
+    //compile fileTree(dir: 'lib', includes: ['*.jar'])
 	compile project(':vertx-core'),
             project(':vertx-platform'),
             "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-            "com.intellij:openapi:7.0.3"
+            "com.intellij:openapi:7.0.3",
+            "org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion",
+            "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion",
+            "org.jetbrains.kotlin:kotlin-jdk-annotations:$kotlinVersion"
+
 
 }
 

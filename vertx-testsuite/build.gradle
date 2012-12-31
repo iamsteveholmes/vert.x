@@ -21,13 +21,16 @@ apply plugin: 'kotlin'
 sourceSets {
 	main {
 		resources {
-			srcDirs "src/main/ruby_scripts", "src/main/python_scripts", "src/main/groovy_scripts", "src/main/javascript_scripts", "../src/dist/conf"
+			srcDirs "src/main/ruby_scripts", "src/main/python_scripts", "src/main/groovy_scripts", "src/main/javascript_scripts"//, "../src/dist/conf"
 		}
+
+        output.dir("../src/dist/conf")
 	}
 	test {
 		resources {
-			srcDirs "src/test/ruby_scripts", "src/test/python_scripts", "src/test/groovy_scripts", "src/test/javascript_scripts", "src/test/kotlin-scripts", "../src/dist/conf"
+			srcDirs "src/test/ruby_scripts", "src/test/python_scripts", "src/test/groovy_scripts", "src/test/javascript_scripts", "src/test/kotlin-scripts"//, "../src/dist/conf"
 		}
+        output.dir("../src/dist/conf")
 	}
 }
 
@@ -37,15 +40,18 @@ dependencies {
 }
 
 test {
-  testLogging.showStandardStreams = true
+	//dependsOn :vert.x:assemble
+    testLogging.showStandardStreams = true
 
 	systemProperty 'vertx.test.timeout', 15
-  systemProperty 'vertx.mods', "$projectDir/src/test/mod-test"
+    systemProperty 'vertx.mods', "$projectDir/src/test/mod-test"
 	systemProperty 'jruby.home', System.getenv('JRUBY_HOME')
 
 	jvmArgs '-server', '-Xms128m', '-Xmx1024m', '-XX:MaxPermSize=128m', '-XX:NewRatio=2'
 
 	forkEvery 50 // FIXME This may not be necessary
 }
+
+//processResources.dependsOn rootProject.tasks.getByPath('assemble')
 
 compileJava.dependsOn compileKotlin

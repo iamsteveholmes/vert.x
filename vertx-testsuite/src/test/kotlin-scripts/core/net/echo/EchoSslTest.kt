@@ -66,9 +66,9 @@ public class EchoSslApp() : TestVerticle() {
             }
             
             connectHandler { socket ->
-                testUtils!!!!.checkContext()
+                testUtils!!.checkContext()
                 socket.dataHandler { buffer ->
-                    testUtils!!!!.checkContext()
+                    testUtils!!.checkContext()
                     socket.write(buffer)
                 }
             }

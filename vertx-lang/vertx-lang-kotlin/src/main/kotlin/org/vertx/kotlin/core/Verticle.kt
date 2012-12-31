@@ -55,5 +55,5 @@ public fun Verticle.deployVerticle(main: String, config: JsonObject = JsonObject
 }
 
 public fun Verticle.deployVerticle(main: java.lang.Class<*>, config: JsonObject = JsonObject(), instances: Int = 1, doneHandler: ((String)->Any?)? = null) {
-    getContainer()!!.deployVerticle(main.getName() as String, config, instances, if(doneHandler!=null) handler(doneHandler) else null)
+    getContainer()!!.deployVerticle(main.getName(), config, instances, if(doneHandler!=null) handler(doneHandler) else null)
 }

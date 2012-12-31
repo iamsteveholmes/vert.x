@@ -7,7 +7,7 @@ public class KotlinScriptVerticle(val clazz: Class<*>) : Verticle() {
     public var onStop:  (()-> Any?)? = null
 
     public override fun start() {
-        clazz.getConstructors()!![0]!!.newInstance(vertx, container, this)
+        clazz.getConstructors()[0].newInstance(vertx, container, this)
         if(onStart != null) {
             onStart!!()
         }
