@@ -1,0 +1,42 @@
+/**
+ * @author Stanley Shyiko <stanley.shyiko[at]gmail.com>
+ */
+
+
+def injectMethods(def builder, def fullClassName) {
+    def psiClass = builder.findClass(fullClassName)
+    psiClass?.methods.each {
+        if (it.containingClass.name != 'Object') {
+            def params = [:]
+            it.parameterList.parameters.each {
+                params[it.name] = it.type.canonicalText
+            }
+            builder.method name: it.name, type: it.returnType.canonicalText, params: params
+        }
+    }
+}
+
+def scriptName = 'build.gradle'
+def projectContext = context(scope: scriptScope(name: scriptName))
+contributor(projectContext) {
+    injectMethods delegate, 'org.gradle.api.Project'
+}
+
+def closureContext = context(ctype: 'groovy.lang.Closure', scope: scriptScope(name: scriptName))
+def methodClosureTypeMap = [
+        'repositories': 'org.gradle.api.artifacts.dsl.RepositoryHandler',
+        'dependencies': 'org.gradle.api.artifacts.dsl.DependencyHandler',
+        'copy': 'org.gradle.api.file.CopySpec',
+        'fileTree': 'org.gradle.api.file.ConfigurableFileTree',
+        'javaexec': 'org.gradle.process.JavaExecSpec',
+        'exec': 'org.gradle.process.ExecSpec',
+        'buildscript': 'org.gradle.api.initialization.dsl.ScriptHandler'
+]
+contributor(closureContext) {
+    for (e in methodClosureTypeMap) {
+        if (enclosingCall(e.key)) {
+            injectMethods delegate, e.value
+            break
+        }
+    }
+}

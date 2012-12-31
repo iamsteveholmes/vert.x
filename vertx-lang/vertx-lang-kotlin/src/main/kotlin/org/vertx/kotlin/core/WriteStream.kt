@@ -23,6 +23,6 @@ public fun WriteStream.drainHandler(handler: ()->Any?) {
     this.drainHandler(handler(handler))
 }
 
-public fun WriteStream.exceptionHandler(handler: (Exception)->Any?) {
+public fun WriteStream.exceptionHandler(handler: (Exception?)->Any?) {
     this.exceptionHandler(handler(handler))
 }

@@ -25,6 +25,7 @@ import org.vertx.java.core.net.NetClient
 import org.vertx.java.core.eventbus.EventBus
 import org.vertx.java.core.logging.Logger
 import org.vertx.java.core.json.JsonObject
+import org.vertx.java.core.Handler
 
 public fun Verticle.createHttpServer(config: HttpServer.()->Unit) : HttpServer = getVertx().createHttpServer(config)
 
@@ -34,7 +35,7 @@ public fun Verticle.createNetServer(config: NetServer.()->Unit) : NetServer = ge
 
 public fun Verticle.createNetClient(config: NetClient.()->Unit) : NetClient = getVertx().createNetClient(config)
 
-public fun Verticle.setPeriodic(l: Long, longHandler: (Long)->Unit) : Long = getVertx().setPeriodic(l, longHandler)
+public fun Verticle.setPeriodic(l: Long, longHandler: Handler<Long?>?) : Long = getVertx()!!.setPeriodic(l, longHandler)
 
 public val Verticle.eventBus: EventBus
     get() = getVertx()!!.eventBus()!!
@@ -50,10 +51,10 @@ public val Verticle.config: JsonObject
         return if(config == null) JsonObject() else config
     }
 
-public fun Verticle.deployVerticle(main: String, config: JsonObject = JsonObject(), instances: Int = 1, doneHandler: ((String)->Any?)? = null) {
+public fun Verticle.deployVerticle(main: String, config: JsonObject = JsonObject(), instances: Int = 1, doneHandler: ((String?)->Any?)? = null) {
     getContainer()!!.deployVerticle(main, config, instances, if(doneHandler!=null) handler(doneHandler) else null)
 }
 
-public fun Verticle.deployVerticle(main: java.lang.Class<*>, config: JsonObject = JsonObject(), instances: Int = 1, doneHandler: ((String)->Any?)? = null) {
+public fun Verticle.deployVerticle(main: java.lang.Class<*>, config: JsonObject = JsonObject(), instances: Int = 1, doneHandler: ((String?)->Any?)? = null) {
     getContainer()!!.deployVerticle(main.getName(), config, instances, if(doneHandler!=null) handler(doneHandler) else null)
 }

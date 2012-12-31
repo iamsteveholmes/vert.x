@@ -37,13 +37,13 @@ public fun HttpServerRequest.setChunked(b: Boolean) : Unit {
     response!!.setChunked(b)
 }
 
-public val HttpServerRequest.requestParams : Map<String,String>
+public val HttpServerRequest.requestParams : Map<String?,String?>
     get() = params()!!
 
-public val HttpServerRequest.responseHeaders : Map<String,Any>
+public val HttpServerRequest.responseHeaders : Map<String?,Any?>
     get() = response!!.headers()!!
 
-public val HttpServerRequest.requestHeaders : Map<String,String>
+public val HttpServerRequest.requestHeaders : Map<String?,String?>
     get() = headers()!!
 
 public fun HttpServerRequest.putHeader(s: String, o: Any) : HttpServerRequest {
@@ -51,7 +51,7 @@ public fun HttpServerRequest.putHeader(s: String, o: Any) : HttpServerRequest {
     return this
 }
 
-public val HttpServerRequest.trailers : Map<String,Any>?
+public val HttpServerRequest.trailers : Map<String?,Any?>?
     get() = response!!.trailers()
 
 public fun HttpServerRequest.putTrailer(s: String, o: Any) : HttpServerRequest {

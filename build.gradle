@@ -24,39 +24,47 @@ buildscript {
 
         mavenRepo url: 'http://repository.jetbrains.com/kotlin/'
         mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/'
+	}
+  dependencies {
+      classpath gradleApi()
+      //classpath gradleRuntime()
+      classpath 'com.eriwen:gradle-js-plugin:1.1'
+    classpath ('com.github.goldin.plugins.gradle:kotlin:0.2-SNAPSHOT'){
+        //exclude group: 'org.jetbrains.kotlin'
     }
-    dependencies {
-        classpath 'com.eriwen:gradle-js-plugin:1.1'
-        classpath 'com.github.goldin.plugins.gradle:kotlin:0.2-SNAPSHOT'
-    }
-}
+    classpath "org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion",
+              "org.jetbrains.kotlin:kdoc:$kotlinVersion"
+  }
+} 
 
 apply plugin: 'js'
 
 allprojects {
+
     apply plugin: 'eclipse'
     apply plugin: 'idea'
 
-    configurations {
-        platform
+	configurations {
+		platform
         //all*.exclude group: 'org.jetbrains.kotlin', module: 'kotlin-compiler', version: "$kotlinVersion"
+	}
+
+    repositories {
+        mavenRepo url: 'http://repository.jetbrains.com/kotlin/'
     }
 }
 
 subprojects {
     apply plugin: 'java'
 
-    sourceCompatibility = '1.7'
-    targetCompatibility = '1.7'
-
-    defaultTasks = ['classes']
-    group = rootProject.group
-
-    repositories {
-        flatDir {
+	defaultTasks = ['classes']
+	group = rootProject.group
+	
+	repositories {
+        /*flatDir {
             dirs 'vertx-lang/vertx-lang-kotlin/lib'
-        }
-        mavenCentral()
+        }*/
+		mavenCentral()
         mavenRepo url: 'http://repository.jetbrains.com/kotlin/'
     }
 

@@ -17,16 +17,16 @@
 apply from:   "$rootDir/gradle/maven.gradle"
 apply plugin: 'kotlin'
 
-
-repositories {
+/*repositories {
     mavenLocal()
     mavenRepo url: 'http://repository.jetbrains.com/kotlin/'
-}
+}*/
 
 dependencies {
     //compile fileTree(dir: 'lib', includes: ['*.jar'])
 	compile project(':vertx-core'),
-            project(':vertx-platform'),
+            project(':vertx-platform')
+    compile "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion",
             "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
             "com.intellij:openapi:7.0.3",
             "org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion",
@@ -44,13 +44,11 @@ task kotlinSourceJar( type: Jar, dependsOn: [ sourceJar ] ) {
 	from sourceSets.main.kotlin
 }
 
-
 task kdocJar( type: Jar, dependsOn: [ javadocJar /*, kdoc */ ] ) {
 	classifier = 'javadoc'
     sourceSets.main.kotlin.srcDirs.each{ inputs.dir it }
 	from kdoc.destinationDir
 }
-
 
 artifacts {
 	archives kotlinSourceJar, kdocJar
